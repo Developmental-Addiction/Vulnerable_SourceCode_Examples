@@ -14,165 +14,115 @@ void Vulnerable::CopyString(string str) {
 	strcpy((char*)innerStr_.data(), str.c_str());
 }
 
-// CWE-119: Improper Restriction of Operations within the Bounds of a Memory Buffer
-void Vulnerable::func1() {
+void Vulnerable::func1(const char* input) {
 	char buf[8];
-	strcpy(buf, "This is too long!"); // overflow
+	strcpy(buf, input); // overflow if input is too long
 }
 
-// CWE-120: Classic Buffer Overflow
-void Vulnerable::func2() {
-	char buf[4];
-	scanf("%s", buf); // unsafe
+void Vulnerable::func2(char* buf, size_t bufSize) {
+	scanf("%s", buf); // unsafe, bufSize not enforced
 }
 
-// CWE-121: Stack-based Buffer Overflow
-void Vulnerable::func3() {
-	char buf[4];
-	strcpy(buf, "Overflow");
+void Vulnerable::func3(char* buf, const char* input) {
+	strcpy(buf, input); // overflow if input is too long for buf
 }
 
-// CWE-122: Heap-based Buffer Overflow
-void Vulnerable::func4() {
-	char* buf = new char[4];
-	strcpy(buf, "Overflow");
+void Vulnerable::func4(const char* input, size_t heapSize) {
+	char* buf = new char[heapSize];
+	strcpy(buf, input); // overflow if input is too long
 	delete[] buf;
 }
 
-// CWE-125: Out-of-bounds Read
-void Vulnerable::func5() {
-	int arr[2] = {1,2};
-	int x = arr[5];
+void Vulnerable::func5(const int* arr, size_t arrSize, size_t index) {
+	int x = arr[index]; // out-of-bounds read if index >= arrSize
 }
 
-// CWE-190: Integer Overflow
-void Vulnerable::func6() {
-	unsigned int x = UINT_MAX;
-	x += 1;
+void Vulnerable::func6(unsigned int x) {
+	x += 1; // integer overflow if x == UINT_MAX
 }
 
-// CWE-191: Integer Underflow
-void Vulnerable::func7() {
-	unsigned int x = 0;
-	x -= 1;
+void Vulnerable::func7(unsigned int x) {
+	x -= 1; // integer underflow if x == 0
 }
 
-// CWE-193: Off-by-one Error
-void Vulnerable::func8() {
-	char buf[4];
-	for (int i = 0; i <= 4; ++i) buf[i] = 'A';
+void Vulnerable::func8(char* buf, size_t bufSize) {
+	for (size_t i = 0; i <= bufSize; ++i) buf[i] = 'A'; // off-by-one error
 }
 
-// CWE-194: Unexpected Sign Extension
-void Vulnerable::func9() {
-	short s = -1;
+void Vulnerable::func9(short s, char* buf, size_t bufSize) {
 	unsigned short us = s;
-	char buf[10];
-	memset(buf, 'A', us); // us is 65535
+	memset(buf, 'A', us); // unexpected sign extension
 }
 
-// CWE-195: Signed to Unsigned Conversion Error
-void Vulnerable::func10() {
-	int len = -1;
-	char buf[10];
-	memcpy(buf, "AAAA", len); // len is -1, treated as large unsigned
+void Vulnerable::func10(int len, const char* src, char* dest) {
+	memcpy(dest, src, len); // signed to unsigned conversion error if len < 0
 }
 
-// CWE-416: Use After Free
-void Vulnerable::func11() {
-	int* p = new int(42);
+void Vulnerable::func11(int* p) {
 	delete p;
-	*p = 13;
+	*p = 13; // use after free
 }
 
-// CWE-457: Use of Uninitialized Variable
-void Vulnerable::func12() {
-	int x;
-	int y = x;
+void Vulnerable::func12(int x) {
+	int y = x; // use of uninitialized variable if x is not initialized
 }
 
-// CWE-476: NULL Pointer Dereference
-void Vulnerable::func13() {
-	int* p = nullptr;
-	*p = 42;
+void Vulnerable::func13(int* p) {
+	*p = 42; // null pointer dereference if p == nullptr
 }
 
-// CWE-590: Free Memory Not on Heap
-void Vulnerable::func14() {
-	int arr[4];
-	free(arr);
+void Vulnerable::func14(int* arr) {
+	free(arr); // free memory not on heap if arr is stack-allocated
 }
 
-// CWE-664: Improper Control of a Resource
-void Vulnerable::func15() {
-	FILE* f = fopen("file.txt", "w");
+void Vulnerable::func15(const char* filename) {
+	FILE* f = fopen(filename, "w");
 	fclose(f);
-	fprintf(f, "test");
+	fprintf(f, "test"); // improper control of resource
 }
 
-// CWE-787: Out-of-bounds Write
-void Vulnerable::func16() {
-	int arr[2];
-	arr[5] = 42;
+void Vulnerable::func16(int* arr, size_t arrSize, size_t index, int value) {
+	arr[index] = value; // out-of-bounds write if index >= arrSize
 }
 
-// CWE-788: Access of Memory Location After End of Buffer
-void Vulnerable::func17() {
-	std::vector<int> v(2);
-	int x = v.at(5);
+void Vulnerable::func17(const std::vector<int>& v, size_t index) {
+	int x = v.at(index); // access after end of buffer if index >= v.size()
 }
 
-// CWE-805: Buffer Access with Incorrect Index
-void Vulnerable::func18() {
-	char buf[4];
-	buf[10] = 'A';
+void Vulnerable::func18(char* buf, size_t bufSize, size_t index, char value) {
+	buf[index] = value; // buffer access with incorrect index if index >= bufSize
 }
 
-// CWE-806: Buffer Overflow Due to Incorrect Length
-void Vulnerable::func19() {
-	char buf[4];
-	strncpy(buf, "TooLong", 10);
+void Vulnerable::func19(char* buf, size_t bufSize, const char* src, size_t copyLen) {
+	strncpy(buf, src, copyLen); // buffer overflow if copyLen > bufSize
 }
 
-// CWE-822: Untrusted Pointer Dereference
-void Vulnerable::func20() {
-	int* p = (int*)0xDEADBEEF;
-	*p = 42;
+void Vulnerable::func20(int* p) {
+	*p = 42; // untrusted pointer dereference
 }
 
-// CWE-834: Excessive Iteration
-void Vulnerable::func21() {
-	for (int i = 0; i < 1000000000; ++i) {}
+void Vulnerable::func21(size_t iterations) {
+	for (size_t i = 0; i < iterations; ++i) {} // excessive iteration
 }
 
-// CWE-843: Type Confusion
-void Vulnerable::func22() {
-	void* p = (void*)new int(42);
+void Vulnerable::func22(void* p) {
 	float* f = (float*)p;
-	*f = 3.14f;
+	*f = 3.14f; // type confusion
 }
 
-// CWE-870: Use of Uninitialized Resource
-void Vulnerable::func23() {
-	FILE* f;
-	fprintf(f, "test");
+void Vulnerable::func23(FILE* f, const char* msg) {
+	fprintf(f, "%s", msg); // use of uninitialized resource if f is not valid
 }
 
-// CWE-123: Write-What-Where Condition
-void Vulnerable::func24() {
-	int* where = nullptr;
-	int what = 42;
-	*where = what;
+void Vulnerable::func24(int* where, int what) {
+	*where = what; // write-what-where condition
 }
 
-// CWE-124: Buffer Underwrite
-void Vulnerable::func25() {
-	char buf[8];
-	char* p = buf - 4;
-	strcpy(p, "test");
+void Vulnerable::func25(char* buf, size_t bufSize, int underwriteOffset, const char* src) {
+	char* p = buf - underwriteOffset;
+	strcpy(p, src); // buffer underwrite
 }
 
-// CWE-252: Unchecked Return Value
-void Vulnerable::func26() {
-	remove("nonexistent.txt"); // return value not checked
+void Vulnerable::func26(const char* filename) {
+	remove(filename); // unchecked return value
 }
